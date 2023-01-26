@@ -1,0 +1,16 @@
+h2 {
+  text-align: center;
+}
+
+td {
+  border: 1px solid black;
+  width: 30px;
+  height: 30px;
+
+  text-align: center;
+  font-size: 20px;
+}
+
+div {
+  max-width: max-content;
+}
