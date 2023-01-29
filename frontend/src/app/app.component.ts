@@ -7,4 +7,10 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'frontend';
+
+  name: string = "";
+
+  setName($event: any) {
+    this.name = $event;
+  }
 }

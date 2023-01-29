@@ -1,15 +1,15 @@
-import {Component, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
 @Component({
-  selector: 'app-play-field',
-  templateUrl: './play-field.component.html',
-  styleUrls: ['./play-field.component.css']
+  selector: 'app-display-grid',
+  templateUrl: './display-grid.component.html',
+  styleUrls: ['./display-grid.component.css']
 })
-export class PlayFieldComponent {
+export class DisplayGridComponent{
 
-  @Input() playerName: string = "Player1";
   playFieldTopNav: string[] = [" ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-  @Output() ownPlayField: string[][] =
+
+  @Input() playField: string[][] =
     [
       ["", "", "", "", "", "", "", "", "", ""],
       ["", "", "", "", "", "", "", "", "", ""],
@@ -23,11 +23,13 @@ export class PlayFieldComponent {
       ["", "", "", "", "", "", "", "", "", ""],
     ];
 
-  markCellByCords(event: Event, x: number, y: number) {
-    let playFieldCell: string = this.ownPlayField[x][y];
+  @Output() cords: EventEmitter<{x: number, y: number}> = new EventEmitter<{x: number, y: number}>();
 
-    if(playFieldCell === "") this.ownPlayField[x][y] = "X";
-    else this.ownPlayField[x][y] = "";
+  @Input() playerName: string = "";
+  @Output() sendName: EventEmitter<string> = new EventEmitter<string>();
+
+  sendCord(x: number, y: number) {
+    this.cords.emit({x: x, y: y});
   }
 
 }

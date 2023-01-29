@@ -1,4 +1,6 @@
 <div id="mainTable">
-  <app-play-field [playerName]="'Benni043'"></app-play-field>
-  <app-play-field [playerName]="'ToBinio'"></app-play-field>
+  <app-login *ngIf="name === ''" (nameEvent)="setName($event)"></app-login>
+
+  <app-start-play-field *ngIf="name !== ''" [playerName]="name"></app-start-play-field>
+  <app-guess-play-field *ngIf="name !== ''" [playerName]="name + 1"></app-guess-play-field>
 </div>
