@@ -7,10 +7,24 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class StartPlayFieldComponent implements OnInit{
   async ngOnInit(): Promise<void> {
-      await this.setPlayField()
+    let response = await fetch("http://localhost:3000/addPlayer", {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify(this.serverName)
+    });
+
+    let json = await response.json();
+    this.playerName = json.playerName;
+
+    await this.setPlayField();
+
+    console.log(this.playField)
   }
 
-  @Input() playerName: string = "";
+  @Input() serverName: string = "";
+  playerName: string = "";
   playField: string[][] =
     [
       ["", "", "", "", "", "", "", "", "", ""],
@@ -42,7 +56,7 @@ export class StartPlayFieldComponent implements OnInit{
   }
 
   async setPlayField() {
-    let response = await fetch("http://localhost:3000/getField?playerName=" + this.playerName);
+    let response = await fetch("http://localhost:3000/getField?playerName=" + this.playerName + "&serverName=" + this.serverName);
     let json = await response.json();
 
     this.playField = json.field;

@@ -15,17 +15,167 @@ app.listen(port, () => {
     console.log(`sinking ships engine successfully started on port: ${port}`)
 })
 
+let map: Map<string, { playerName: string, amZug: boolean, playerField: string[][], guessPlayerField: string[][] }[]> = new Map<string, { playerName: string, amZug: boolean, playerField: string[][], guessPlayerField: string[][] }[]>;
+
+let map2: Map<string, Map<string, { amZug: boolean, playerField: string[][], guessPlayerField: string[][] }>[]> = new Map<string, Map<string, { amZug: boolean, playerField: string[][], guessPlayerField: string[][] }>[]>;
+
+app.post("/addPlayer", (req, res) => {
+    let serverName = req.body.serverName;
+    let data;
+
+    //
+    // if (!map2.has(serverName)) {
+    //     // @ts-ignore
+    //     map2.set(serverName, [map2.get(serverName).set("player1", {
+    //         amZug: true,
+    //         playerField:
+    //             [
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //             ],
+    //         guessPlayerField:
+    //             [
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //             ]
+    //     })]);
+    //
+    //     data = "player1";
+    // } else {
+    //     // @ts-ignore
+    //     map2.get(serverName).push(map2.get(serverName).set("player2", {
+    //         amZug: true,
+    //         playerField:
+    //             [
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //             ],
+    //         guessPlayerField:
+    //             [
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //                 ["", "", "", "", "", "", "", "", "", ""],
+    //             ]
+    //     }))
+    //
+    //     data = "player2";
+    // }
+
+    if (!map.has(serverName)) {
+        map.set(serverName, [{
+            playerName: "player1", amZug: true,
+            playerField:
+                [
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                ],
+            guessPlayerField:
+                [
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                ]
+        }]);
+
+        data = "player1";
+    } else {
+        // @ts-ignore
+        if (map.get(serverName).length == 2) return;
+        // @ts-ignore
+        map.get(serverName).push({
+            playerName: "player2", amZug: false,
+            playerField:
+                [
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                ],
+            guessPlayerField:
+                [
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                    ["", "", "", "", "", "", "", "", "", ""],
+                ]
+        });
+        data = "player2";
+    }
+
+    res.json({name: data})
+    res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.end();
+})
+
 app.post("/postCords", (req, res) => {
     let x: number = req.body.x;
     let y: number = req.body.y;
 
     let name: string = req.body.name;
 
-    if(name === "player11") {
-        if(player2Field[x][y] === "X") guessPlayer1Field[x][y] = "X";
+    if (name === "player11") {
+        if (player2Field[x][y] === "X") guessPlayer1Field[x][y] = "X";
         else guessPlayer1Field[x][y] = "O";
     } else {
-        if(player1Field[x][y] === "X") guessPlayer2Field[x][y] = "X";
+        if (player1Field[x][y] === "X") guessPlayer2Field[x][y] = "X";
         else guessPlayer2Field[x][y] = "O";
     }
 
@@ -46,10 +196,16 @@ app.get("/getGuessField", (req, res) => {
 
 app.post("/postField", (req, res) => {
     let playField: string[][] = req.body.field;
-    let name: string = req.body.name;
+    let playerName: string = req.body.playerName;
+    let serverName: string = req.body.serverName;
 
-    if(name === "player1") player1Field = playField;
-    else player2Field = playField;
+    if(playerName === "player1") {
+        // @ts-ignore
+        map.get(serverName)[0].playerField = playField;
+    } else {
+        // @ts-ignore
+        map.get(serverName)[1].playerField = playField;
+    }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.end();
@@ -58,9 +214,15 @@ app.post("/postField", (req, res) => {
 app.get("/getField", (req, res) => {
     let data;
     let playerName = req.query.playerName;
+    let serverName = req.query.serverName;
 
-    if(playerName == "player1") data = {field: player1Field};
-    else data = {field: player2Field};
+    if(playerName === "player1") {
+        // @ts-ignore
+        data = map.get(serverName)[0].playerField;
+    } else {
+        // @ts-ignore
+        data = map.get(serverName)[1].playerField;
+    }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.json(data);

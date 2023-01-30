@@ -1,11 +1,17 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 
 @Component({
   selector: 'app-guess-play-field',
   templateUrl: './guess-play-field.component.html',
   styleUrls: ['./guess-play-field.component.css']
 })
-export class GuessPlayFieldComponent {
+export class GuessPlayFieldComponent implements OnInit{
+  async ngOnInit(): Promise<void> {
+    let response = await fetch("http://localhost:3000/getFreeName?type=opponent");
+    let json = await response.json();
+
+    this.playerName = json.name;
+  }
 
   @Input() playerName: string = "";
   playField: string[][] =

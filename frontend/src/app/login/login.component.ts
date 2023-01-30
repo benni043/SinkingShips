@@ -6,10 +6,10 @@ import {Component, EventEmitter, Output} from '@angular/core';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  @Output() nameEvent: EventEmitter<string> = new EventEmitter<string>();
   name: string = "";
+  @Output() servername: EventEmitter<string> = new EventEmitter<string>();
 
-  emit() {
-    this.nameEvent.emit(this.name);
+  async send() {
+    this.servername.emit(this.name);
   }
 }

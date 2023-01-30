@@ -10,7 +10,4 @@ export class AppComponent {
 
   name: string = "";
 
-  setName($event: any) {
-    this.name = $event;
-  }
 }
