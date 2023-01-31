@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import {createEmptyField, Server, State} from "./Server";
 
 const port = 3000
 const app = express();
@@ -15,154 +16,44 @@ app.listen(port, () => {
     console.log(`sinking ships engine successfully started on port: ${port}`)
 })
 
-let map: Map<string, { playerName: string, amZug: boolean, playerField: string[][], guessPlayerField: string[][] }[]> = new Map<string, { playerName: string, amZug: boolean, playerField: string[][], guessPlayerField: string[][] }[]>;
+let map: Map<string, Server> = new Map();
 
-let map2: Map<string, Map<string, { amZug: boolean, playerField: string[][], guessPlayerField: string[][] }>[]> = new Map<string, Map<string, { amZug: boolean, playerField: string[][], guessPlayerField: string[][] }>[]>;
+//let map2: Map<string, Map<string, { amZug: boolean, playerField: string[][], guessPlayerField: string[][] }>[]> = new Map<string, Map<string, { amZug: boolean, playerField: string[][], guessPlayerField: string[][] }>[]>;
 
 app.post("/addPlayer", (req, res) => {
     let serverName = req.body.serverName;
     let data;
 
-    //
-    // if (!map2.has(serverName)) {
-    //     // @ts-ignore
-    //     map2.set(serverName, [map2.get(serverName).set("player1", {
-    //         amZug: true,
-    //         playerField:
-    //             [
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //             ],
-    //         guessPlayerField:
-    //             [
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //             ]
-    //     })]);
-    //
-    //     data = "player1";
-    // } else {
-    //     // @ts-ignore
-    //     map2.get(serverName).push(map2.get(serverName).set("player2", {
-    //         amZug: true,
-    //         playerField:
-    //             [
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //             ],
-    //         guessPlayerField:
-    //             [
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //                 ["", "", "", "", "", "", "", "", "", ""],
-    //             ]
-    //     }))
-    //
-    //     data = "player2";
-    // }
-
     if (!map.has(serverName)) {
-        map.set(serverName, [{
-            playerName: "player1", amZug: true,
-            playerField:
-                [
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                ],
-            guessPlayerField:
-                [
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                ]
-        }]);
+        map.set(serverName, {
+            spieler1: {
+                name: "player1",
+                feld1: createEmptyField(),
+                feld2: createEmptyField()
+            },
+            spieler2: undefined,
+            isSpieler1AmZug: true,
+            state: State.joining
+        })
 
         data = "player1";
     } else {
-        // @ts-ignore
-        if (map.get(serverName).length == 2) return;
-        // @ts-ignore
-        map.get(serverName).push({
-            playerName: "player2", amZug: false,
-            playerField:
-                [
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                ],
-            guessPlayerField:
-                [
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                    ["", "", "", "", "", "", "", "", "", ""],
-                ]
-        });
+        map.get(serverName)!.spieler2 = {
+            name: "player2",
+            feld1: createEmptyField(),
+            feld2: createEmptyField()
+        }
+
+        map.get(serverName)!.state = State.gameRunning;
+
         data = "player2";
     }
 
-    res.json({name: data})
+    console.log(map)
+    console.log(data)
+
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
-    res.end();
+    res.json({name: data})
 })
 
 app.post("/postCords", (req, res) => {
@@ -199,13 +90,16 @@ app.post("/postField", (req, res) => {
     let playerName: string = req.body.playerName;
     let serverName: string = req.body.serverName;
 
-    if(playerName === "player1") {
-        // @ts-ignore
-        map.get(serverName)[0].playerField = playField;
-    } else {
-        // @ts-ignore
-        map.get(serverName)[1].playerField = playField;
+    if (!map.has(serverName)) {
+        res.end();
+        return;
     }
+
+    // if (playerName === "player1") {
+    //     map.get(serverName)![0].playerField = playField;
+    // } else {
+    //     map.get(serverName)![1].playerField = playField;
+    // }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.end();
@@ -213,15 +107,20 @@ app.post("/postField", (req, res) => {
 
 app.get("/getField", (req, res) => {
     let data;
-    let playerName = req.query.playerName;
-    let serverName = req.query.serverName;
+    let elem = req.query.playerName;
 
-    if(playerName === "player1") {
-        // @ts-ignore
-        data = map.get(serverName)[0].playerField;
-    } else {
-        // @ts-ignore
-        data = map.get(serverName)[1].playerField;
+    let playerName = elem!.toString().split(",")[0]
+    let serverName = elem!.toString().split(",")[1]
+
+    console.log(playerName)
+    console.log(serverName)
+
+    if(map.has(serverName)) {
+        if(playerName === "player1") {
+            data = {field: map.get(serverName)!.spieler1.feld1}
+        } else {
+            data = {field: map.get(serverName)!.spieler2!.feld1}
+        }
     }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');

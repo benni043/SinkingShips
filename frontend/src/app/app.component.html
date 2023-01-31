@@ -1,6 +1,6 @@
 <div id="mainTable">
   <app-login (servername)="name = $event"></app-login>
 
-  <app-start-play-field [serverName]="name"></app-start-play-field>
+  <app-start-play-field *ngIf="name !== ''" [serverName]="name"></app-start-play-field>
 <!--  <app-guess-play-field></app-guess-play-field>-->
 </div>
