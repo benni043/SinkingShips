@@ -9,5 +9,10 @@ export class AppComponent {
   title = 'frontend';
 
   name: string = "";
+  server: string = "";
 
+  setPlayerObj($event: { playerName: string; serverName: string }) {
+    this.name = $event.playerName;
+    this.server = $event.serverName;
+  }
 }

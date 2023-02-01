@@ -1,4 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {FeldState} from "../../../../Server";
 
 @Component({
   selector: 'app-display-grid',
@@ -9,19 +10,7 @@ export class DisplayGridComponent{
 
   playFieldTopNav: string[] = [" ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
-  @Input() playField: string[][] =
-    [
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-    ];
+  @Input() playField: FeldState[][] = []
 
   @Output() cords: EventEmitter<{x: number, y: number}> = new EventEmitter<{x: number, y: number}>();
 

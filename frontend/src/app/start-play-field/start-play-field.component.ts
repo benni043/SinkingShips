@@ -1,4 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
+import {FeldState} from "../../../../Server";
 
 @Component({
   selector: 'app-start-play-field',
@@ -7,47 +8,29 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class StartPlayFieldComponent implements OnInit{
   async ngOnInit(): Promise<void> {
-    let serverName = {serverName: this.serverName}
+    let login = {serverName: this.serverName, playerName: this.playerName}
 
-    let response = await fetch("http://localhost:3000/addPlayer", {
+    await fetch("http://localhost:3000/addPlayer", {
       headers: {
         "Content-Type": "application/json"
       },
       method: "POST",
-      body: JSON.stringify(serverName)
+      body: JSON.stringify(login)
     });
-
-    let json = await response.json();
-    this.playerName = json.name;
-
-    console.log(this.serverName)
-    console.log(this.playerName)
 
     await this.setPlayField();
   }
 
   @Input() serverName: string = "";
-  playerName: string = "";
-  playField: string[][] =
-    [
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", "", "", ""],
-    ];
+  @Input() playerName: string = "";
+  playField: FeldState[][] = [];
 
   setField(cords: { x: number; y: number }) {
-    this.playField[cords.x][cords.y] = "X";
+    this.playField[cords.x][cords.y] = FeldState.ship;
   }
 
   async send() {
-    let playField = {field: this.playField, name: this.playerName};
+    let playField = {field: this.playField, name: this.playerName, server: this.serverName};
 
     await fetch("http://localhost:3000/postField", {
       headers: {

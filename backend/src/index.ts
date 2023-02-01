@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import {createEmptyField, Server, State} from "./Server";
+import {createEmptyField, FeldState, Server, State} from "../../Server";
 
 const port = 3000
 const app = express();
@@ -22,12 +22,13 @@ let map: Map<string, Server> = new Map();
 
 app.post("/addPlayer", (req, res) => {
     let serverName = req.body.serverName;
+    let playerName = req.body.playerName;
     let data;
 
     if (!map.has(serverName)) {
         map.set(serverName, {
             spieler1: {
-                name: "player1",
+                name: playerName,
                 feld1: createEmptyField(),
                 feld2: createEmptyField()
             },
@@ -35,39 +36,46 @@ app.post("/addPlayer", (req, res) => {
             isSpieler1AmZug: true,
             state: State.joining
         })
-
-        data = "player1";
     } else {
+        if(map.get(serverName)!.state === State.gameRunning) {
+            res.end();
+            return;
+        }
+
         map.get(serverName)!.spieler2 = {
-            name: "player2",
+            name: playerName,
             feld1: createEmptyField(),
             feld2: createEmptyField()
         }
 
         map.get(serverName)!.state = State.gameRunning;
-
-        data = "player2";
     }
 
-    console.log(map)
-    console.log(data)
-
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
-    res.json({name: data})
+    res.end();
 })
 
 app.post("/postCords", (req, res) => {
     let x: number = req.body.x;
     let y: number = req.body.y;
 
-    let name: string = req.body.name;
+    let playerName: string = req.body.playerName;
+    let serverName: string = req.body.serverName;
 
-    if (name === "player11") {
-        if (player2Field[x][y] === "X") guessPlayer1Field[x][y] = "X";
-        else guessPlayer1Field[x][y] = "O";
-    } else {
-        if (player1Field[x][y] === "X") guessPlayer2Field[x][y] = "X";
-        else guessPlayer2Field[x][y] = "O";
+    if(map.has(serverName)) {
+        if(playerName === map.get(serverName)!.spieler1.name) {
+            if(map.get(serverName)!.spieler2!.feld1[x][y] === FeldState.ship) {
+                map.get(serverName)!.spieler1.feld2[x][y] = FeldState.ship;
+            } else {
+                map.get(serverName)!.spieler1.feld2[x][y] = FeldState.water;
+            }
+        } else {
+            if(map.get(serverName)!.spieler1!.feld1[x][y] === FeldState.ship) {
+                map.get(serverName)!.spieler2!.feld2[x][y] = FeldState.ship;
+            } else {
+                map.get(serverName)!.spieler2!.feld2[x][y] = FeldState.water;
+            }
+        }
     }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
@@ -76,30 +84,36 @@ app.post("/postCords", (req, res) => {
 
 app.get("/getGuessField", (req, res) => {
     let data;
-    let playerName = req.query.playerName;
+    let elem = req.query.playerName;
 
-    if(playerName == "player11") data = {field: guessPlayer1Field};
-    else data = {field: guessPlayer2Field};
+    let playerName = elem!.toString().split(",")[0]
+    let serverName = elem!.toString().split(",")[1]
+
+    if(map.has(serverName)) {
+        if(playerName === map.get(serverName)!.spieler1.name) {
+            data = {field: map.get(serverName)!.spieler1.feld2}
+        } else {
+            data = {field: map.get(serverName)!.spieler2!.feld2}
+        }
+    }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.json(data);
 })
 
 app.post("/postField", (req, res) => {
-    let playField: string[][] = req.body.field;
-    let playerName: string = req.body.playerName;
-    let serverName: string = req.body.serverName;
+    let playField: FeldState[][] = req.body.field;
 
-    if (!map.has(serverName)) {
-        res.end();
-        return;
+    let playerName: string = req.body.name;
+    let serverName: string = req.body.server;
+
+    if(map.has(serverName)) {
+        if(playerName === map.get(serverName)!.spieler1.name) {
+            map.get(serverName)!.spieler1.feld1 = playField;
+        } else {
+            map.get(serverName)!.spieler2!.feld1 = playField;
+        }
     }
-
-    // if (playerName === "player1") {
-    //     map.get(serverName)![0].playerField = playField;
-    // } else {
-    //     map.get(serverName)![1].playerField = playField;
-    // }
 
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.end();
@@ -112,11 +126,8 @@ app.get("/getField", (req, res) => {
     let playerName = elem!.toString().split(",")[0]
     let serverName = elem!.toString().split(",")[1]
 
-    console.log(playerName)
-    console.log(serverName)
-
     if(map.has(serverName)) {
-        if(playerName === "player1") {
+        if(playerName === map.get(serverName)!.spieler1.name) {
             data = {field: map.get(serverName)!.spieler1.feld1}
         } else {
             data = {field: map.get(serverName)!.spieler2!.feld1}
@@ -126,59 +137,3 @@ app.get("/getField", (req, res) => {
     res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.json(data);
 })
-
-let player1Field: string[][] =
-    [
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-    ];
-
-let player2Field: string[][] =
-    [
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-    ];
-
-let guessPlayer1Field: string[][] =
-    [
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-    ];
-
-let guessPlayer2Field: string[][] =
-    [
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", "", ""],
-    ];

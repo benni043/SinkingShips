@@ -7,9 +7,11 @@ import {Component, EventEmitter, Output} from '@angular/core';
 })
 export class LoginComponent {
   name: string = "";
-  @Output() servername: EventEmitter<string> = new EventEmitter<string>();
+  server: string = "";
+
+  @Output() login: EventEmitter<{playerName: string, serverName: string}> = new EventEmitter<{playerName: string, serverName: string}>();
 
   async send() {
-    this.servername.emit(this.name);
+    this.login.emit({playerName: this.name, serverName: this.server});
   }
 }
