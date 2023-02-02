@@ -1,5 +1,5 @@
 <div id="mainTable">
-  <app-login (login)="setPlayerObj($event)"></app-login>
+  <app-login *ngIf="name === ''" (login)="setPlayerObj($event)"></app-login>
 
   <app-start-play-field *ngIf="name !== ''" [serverName]="server" [playerName]="name"></app-start-play-field>
   <app-guess-play-field *ngIf="name !== ''" [serverName]="server" [playerName]="name"></app-guess-play-field>

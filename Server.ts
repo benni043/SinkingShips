@@ -14,9 +14,9 @@ export type Spieler = {
 export type Feld = FeldState[][];
 
 export enum FeldState {
-    ship,
-    water,
-    empty
+    ship = "X",
+    water = "O",
+    empty = " "
 }
 
 export enum State {

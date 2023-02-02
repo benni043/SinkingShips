@@ -24,12 +24,15 @@ export class StartPlayFieldComponent implements OnInit{
   @Input() serverName: string = "";
   @Input() playerName: string = "";
   playField: FeldState[][] = [];
+  clicked: boolean = false;
 
   setField(cords: { x: number; y: number }) {
     this.playField[cords.x][cords.y] = FeldState.ship;
   }
 
   async send() {
+    this.clicked = true;
+
     let playField = {field: this.playField, name: this.playerName, server: this.serverName};
 
     await fetch("http://localhost:3000/postField", {

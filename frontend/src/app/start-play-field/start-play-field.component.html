@@ -1,6 +1,5 @@
 <div>
   <h2>{{playerName}}</h2>
-  <h2>{{serverName}}</h2>
   <app-display-grid (cords)="setField($event)" [playField]="playField"></app-display-grid>
-  <button (click)="send()">send</button>
+  <button *ngIf="!clicked" (click)="send()">send</button>
 </div>

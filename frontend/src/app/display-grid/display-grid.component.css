@@ -14,3 +14,7 @@ td {
 div {
   max-width: max-content;
 }
+
+hit {
+  color: red;
+}
