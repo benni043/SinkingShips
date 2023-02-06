@@ -1,5 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {FeldState} from "../../../../Server";
+import {interval} from "rxjs";
 
 @Component({
   selector: 'app-start-play-field',
@@ -8,15 +9,9 @@ import {FeldState} from "../../../../Server";
 })
 export class StartPlayFieldComponent implements OnInit{
   async ngOnInit(): Promise<void> {
-    let login = {serverName: this.serverName, playerName: this.playerName}
-
-    await fetch("http://localhost:3000/addPlayer", {
-      headers: {
-        "Content-Type": "application/json"
-      },
-      method: "POST",
-      body: JSON.stringify(login)
-    });
+    let response = await fetch("/getPlayer?playerName=" + this.playerName + "," + this.serverName);
+    let json = await response.json();
+    if(json.player.fieldSent) this.clicked = true;
 
     await this.setPlayField();
   }
@@ -27,7 +22,7 @@ export class StartPlayFieldComponent implements OnInit{
   clicked: boolean = false;
 
   setField(cords: { x: number; y: number }) {
-    this.playField[cords.x][cords.y] = FeldState.ship;
+    if(!this.clicked) this.playField[cords.x][cords.y] = FeldState.ship;
   }
 
   async send() {
@@ -35,17 +30,21 @@ export class StartPlayFieldComponent implements OnInit{
 
     let playField = {field: this.playField, name: this.playerName, server: this.serverName};
 
-    await fetch("http://localhost:3000/postField", {
+    await fetch("/postField", {
       headers: {
         "Content-Type": "application/json"
       },
       method: "POST",
       body: JSON.stringify(playField)
     });
+
+    setInterval(async () => {
+      await this.setPlayField()
+    }, 100)
   }
 
   async setPlayField() {
-    let response = await fetch("http://localhost:3000/getField?playerName=" + this.playerName + "," + this.serverName);
+    let response = await fetch("/getField?playerName=" + this.playerName + "," + this.serverName);
     let json = await response.json();
 
     this.playField = json.field;

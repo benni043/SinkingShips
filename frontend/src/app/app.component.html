@@ -1,6 +1,12 @@
 <div id="mainTable">
-  <app-login *ngIf="name === ''" (login)="setPlayerObj($event)"></app-login>
+  <app-login *ngIf="!loggedIn" (login)="send($event)"></app-login>
 
-  <app-start-play-field *ngIf="name !== ''" [serverName]="server" [playerName]="name"></app-start-play-field>
-  <app-guess-play-field *ngIf="name !== ''" [serverName]="server" [playerName]="name"></app-guess-play-field>
+  <div *ngIf="loggedIn">
+    <app-start-play-field [serverName]="serverName" [playerName]="playerName"></app-start-play-field>
+    <app-guess-play-field [serverName]="serverName" [playerName]="playerName"></app-guess-play-field>
+  </div>
+</div>
+
+<div *ngIf="gameEnd">
+  <button (click)="leaveLobby()">leave room</button>
 </div>

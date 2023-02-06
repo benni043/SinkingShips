@@ -3,10 +3,15 @@ export type Server = {
     spieler2: Spieler | undefined
     isSpieler1AmZug: boolean
     state: State
+    isPlayer1Ready: boolean
+    isPlayer2Ready: boolean
+    gameEnd: boolean
 }
 
 export type Spieler = {
-    name: string;
+    name: string | undefined;
+    isOnline: boolean;
+    fieldSent: boolean,
     feld1: Feld;
     feld2: Feld;
 }
@@ -15,6 +20,7 @@ export type Feld = FeldState[][];
 
 export enum FeldState {
     ship = "X",
+    koShip = "|",
     water = "O",
     empty = " "
 }
@@ -22,6 +28,12 @@ export enum FeldState {
 export enum State {
     joining,
     gameRunning
+}
+
+export enum Status {
+    join,
+    rejoin,
+    full
 }
 
 export function createEmptyField(): Feld {

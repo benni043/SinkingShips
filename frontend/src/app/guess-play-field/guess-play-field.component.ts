@@ -7,8 +7,8 @@ import {createEmptyField, FeldState} from "../../../../Server";
   styleUrls: ['./guess-play-field.component.css']
 })
 export class GuessPlayFieldComponent implements OnInit{
-  ngOnInit(): void {
-      this.playField = createEmptyField();
+  async ngOnInit(): Promise<void> {
+    await this.setPlayField();
   }
 
   @Input() serverName: string = "";
@@ -16,13 +16,17 @@ export class GuessPlayFieldComponent implements OnInit{
   playField: FeldState[][] = []
 
   async setField(cords: { x: number; y: number }) {
-    await this.send(cords.x, cords.y);
+    let response = await fetch("/isStarted?serverName=" + this.serverName);
+    let json = await response.json();
+
+    if(json.started === true) await this.send(cords.x, cords.y);
+    else alert("game not started yet");
   }
 
   async send(x: number, y: number) {
     let cords = {x: x, y: y, playerName: this.playerName, serverName: this.serverName};
 
-    await fetch("http://localhost:3000/postCords", {
+    let response = await fetch("/postGuessFieldCords", {
       headers: {
         "Content-Type": "application/json"
       },
@@ -30,11 +34,18 @@ export class GuessPlayFieldComponent implements OnInit{
       body: JSON.stringify(cords)
     });
 
-    await this.setPlayField();
+    let json = await response.json();
+
+    if(json.isPlayerAmZug) {
+      await this.setPlayField();
+    } else {
+      alert("du bist nicht dran")
+    }
+
   }
 
   async setPlayField() {
-    let response = await fetch("http://localhost:3000/getGuessField?playerName=" + this.playerName + "," + this.serverName);
+    let response = await fetch("/getGuessField?playerName=" + this.playerName + "," + this.serverName);
     let json = await response.json();
 
     this.playField = json.field;
