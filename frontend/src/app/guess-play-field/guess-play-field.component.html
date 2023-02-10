@@ -1,4 +1,4 @@
 <div>
-  <h2>Gegner</h2>
-  <app-display-grid (cords)="setField($event)" [playField]="playField"></app-display-grid>
+  <h2>Gegner: <span>{{gegnerName}}</span></h2>
+  <app-display-grid [disabled]="!started || gameEnd" [hover]="started && !gameEnd" (cords)="setField($event)" [playField]="playField"></app-display-grid>
 </div>

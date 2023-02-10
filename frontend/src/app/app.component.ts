@@ -1,97 +1,118 @@
-import {Component, HostListener, OnInit} from '@angular/core';
+import {Component, HostListener} from '@angular/core';
 import {Status} from "../../../Server";
-import {TimeInterval} from "rxjs";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit{
-  ngOnInit(): void {
-
-  }
-  title = 'frontend';
-
+export class AppComponent {
   playerName: string = "";
   serverName: string = "";
+
   loggedIn: boolean = false;
   gameEnd: boolean = false;
 
+  login: {serverName: string, playerName: string} = {
+    serverName: '',
+    playerName: ''
+  };
+
   async leaveLobby() {
-    clearInterval(this.interval);
+    this.loggedIn = false;
 
-    let login = {serverName: this.serverName, playerName: this.playerName}
-
-    await fetch("/playerLeft", {
+    fetch("http://10.0.0.48:3000/playerLeft", {
       headers: {
         "Content-Type": "application/json"
       },
       method: "POST",
-      body: JSON.stringify(login)
-    })
+      body: JSON.stringify(this.login)
+    }).then().catch()
 
-    this.loggedIn = false;
     this.gameEnd = false;
   }
 
-  @HostListener('window:beforeunload', ['$event'])
-  unloadHandler(event: Event) {
-    // let login = {serverName: this.serverName, playerName: this.playerName}
+  // @HostListener('window:beforeunload', ['$event'])
+  // unloadHandler(event: Event) {
+  //   this.loggedIn = false;
+  //
+  //   fetch("http://10.0.0.48:3000/playerLeft", {
+  //     headers: {
+  //       "Content-Type": "application/json"
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify(this.login)
+  //   }).then().catch()
+  //
+  //   this.gameEnd = false;
+  // }
 
-    // fetch("/playerLeft", {
-    //   headers: {
-    //     "Content-Type": "application/json"
-    //   },
-    //   method: "POST",
-    //   body: JSON.stringify(login)
-    // }).then(r => console.log("then")).catch(reason => console.log(reason));
+  actPlayer = "";
 
-    this.leaveLobby().then(r => console.log("then")).catch(reason => console.log(reason));
-  }
-
-  interval: any;
   async send($event: { playerName: string; serverName: string }) {
-    this.playerName = $event.playerName;
-    this.serverName = $event.serverName;
+    this.playerName = $event.playerName
+    this.serverName = $event.serverName
 
-    this.interval = setInterval(async () => {
-      let response = await fetch("/isGameFinished?serverName=" + this.serverName);
-      let json = await response.json();
-
-      if(json.finished) this.gameEnd = true;
-    }, 1000)
+    this.login = {playerName: $event.playerName, serverName: $event.serverName}
 
     let status = await this.check();
 
-    if (status === Status.full) {
-      alert("room is full")
-    } else if (status === Status.join) {
-      let login = {serverName: this.serverName, playerName: this.playerName}
+    switch (status) {
+      case Status.full: {
+        alert("Diese Lobby ist bereits voll!");
+        break
+      }
+      case Status.join: {
+        await fetch("http://10.0.0.48:3000/addGame", {
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: "POST",
+          body: JSON.stringify(this.login)
+        });
 
-      await fetch("/addGame", {
-        headers: {
-          "Content-Type": "application/json"
-        },
-        method: "POST",
-        body: JSON.stringify(login)
-      });
-
-      this.loggedIn = true;
-    } else if(status === Status.rejoin) {
-      this.loggedIn = true;
+        this.loggedIn = true;
+        break
+      }
+      case Status.rejoin: {
+        this.loggedIn = true;
+        break
+      }
     }
+
+    let interval = setInterval(async () => {
+      let response = await fetch("http://10.0.0.48:3000/isGameFinished?serverName=" + this.serverName);
+      let json = await response.json();
+
+      let server = json.server;
+
+      if(server.isSpieler1AmZug) {
+        this.actPlayer = server.spieler1.name
+      } else {
+        this.actPlayer = server.spieler2.name
+      }
+
+      if (json.finished) {
+        clearInterval(interval);
+
+        if(server.isSpieler1AmZug) {
+          this.actPlayer = server.spieler2.name
+        } else {
+          this.actPlayer = server.spieler1.name
+        }
+
+        this.gameEnd = true;
+      }
+    }, 100)
   }
 
   async check(): Promise<Status> {
-    let login = {serverName: this.serverName, playerName: this.playerName}
-
-    let response = await fetch("/check", {
+    let response = await fetch("http://10.0.0.48:3000/check", {
       headers: {
         "Content-Type": "application/json"
       },
       method: "POST",
-      body: JSON.stringify(login)
+      body: JSON.stringify(this.login)
     });
 
     let json = await response.json();

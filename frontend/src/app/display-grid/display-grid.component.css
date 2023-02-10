@@ -1,20 +1,43 @@
-h2 {
+table {
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
   text-align: center;
+  width: 20px;
+}
+
+th {
+  background-color: #1C1C1C;
+  color: #fff;
 }
 
 td {
-  border: 1px solid black;
-  width: 30px;
-  height: 30px;
-
-  text-align: center;
-  font-size: 20px;
+  border: 1px solid #fff;
+  background-color: #333;
+  color: #fff;
 }
 
-div {
-  max-width: max-content;
+.hover:hover {
+  background-color: #555;
+  cursor: pointer;
 }
 
-hit {
+.hit {
   color: red;
+}
+
+.finished {
+  border: 1px solid red;
+}
+
+.last {
+  background-color: green;
+}
+
+.disabled {
+  border-color: gray;
+  color: gray;
 }

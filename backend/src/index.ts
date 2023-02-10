@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import {createEmptyField, FeldState, Server, State, Status} from "../../Server";
+import {createEmptyField, Feld, FeldState, Server, State, Status} from "../../Server";
 import path = require("path");
 
 const port = 3000
@@ -13,15 +13,29 @@ app.listen(port, () => {
     console.log(`sinking ships engine successfully started on port: ${port}`)
 })
 
-let map: Map<string, Server> = new Map();
-
 app.use(express.static(path.join(__dirname, '../../frontend/dist/frontend')));
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../frontend/dist/frontend/index.html'));
     res.end()
 });
 
+let map: Map<string, Server> = new Map();
+
+app.get("/opponent", (req, res) => {
+    let serverName: string = req.query.serverName!.toString();
+    let playerName: string = req.query.playerName!.toString();
+
+    if(!map.has(serverName)) {
+        res.end()
+        return;
+    }
+
+    if(map.get(serverName)!.spieler1.name === playerName) {
+        res.json({opponent: map.get(serverName)!.spieler2!.name})
+    } else {
+        res.json({opponent: map.get(serverName)!.spieler1.name})
+    }
+})
 app.get("/isStarted", (req, res) => {
     let serverName: string = req.query.serverName!.toString();
 
@@ -64,29 +78,33 @@ app.post("/check", (req, res) => {
 })
 
 app.get("/getPlayer", (req, res) => {
-    let elem = req.query.playerName;
-
-    let playerName = elem!.toString().split(",")[0]
-    let serverName = elem!.toString().split(",")[1]
+    let serverName: string = req.query.serverName!.toString();
+    let playerName: string = req.query.playerName!.toString();
 
     if (playerName === map.get(serverName)!.spieler1.name) res.json({player: map.get(serverName)!.spieler1})
     else res.json({player: map.get(serverName)!.spieler2})
 })
+
 app.post("/playerLeft", (req, res) => {
     let serverName = req.body.serverName;
     let playerName = req.body.playerName;
 
+    // if(!map.has(serverName)) {
+    //     res.end()
+    //     return;
+    // }
+
     if (playerName === map.get(serverName)!.spieler1.name) map.get(serverName)!.spieler1.isOnline = false;
     else map.get(serverName)!.spieler2!.isOnline = false;
 
-    // if (!map.get(serverName)!.spieler1.isOnline && !map.get(serverName)!.spieler2!.isOnline) {
-    //     console.log(1)
-    //     map.delete(serverName);
-    // }
+    if(!map.get(serverName)!.spieler1.isOnline && !map.get(serverName)!.spieler2!.isOnline) {
+        map.delete(serverName);
+    }
 
     res.end()
 })
 
+//create new game
 app.post("/addGame", (req, res) => {
     let serverName = req.body.serverName;
     let playerName = req.body.playerName;
@@ -118,12 +136,34 @@ app.post("/addGame", (req, res) => {
         map.get(serverName)!.spieler2!.isOnline = true;
         map.get(serverName)!.state = State.gameRunning;
     }
+
     res.end()
 })
 
+//won check
+app.get("/isGameFinished", (req, res) => {
+    let serverName = req.query.serverName!.toString();
+
+    if (map.get(serverName)!.gameEnd) res.json({finished: true, server: map.get(serverName)})
+    else res.json({finished: false, server: map.get(serverName)})
+})
+
+function checkField(field: Feld): boolean {
+    for (let i = 0; i < field.length; i++) {
+        for (let j = 0; j < field[i].length; j++) {
+            if(field[i][j].state === FeldState.ship) return false;
+        }
+    }
+    return true;
+}
+
+//opponentPlayField
 app.post("/postGuessFieldCords", (req, res) => {
     let x: number = req.body.x;
     let y: number = req.body.y;
+
+    let oldX: number = req.body.oldX;
+    let oldY: number = req.body.oldY;
 
     let playerName: string = req.body.playerName;
     let serverName: string = req.body.serverName;
@@ -133,14 +173,19 @@ app.post("/postGuessFieldCords", (req, res) => {
             res.json({isPlayerAmZug: false})
             return
         }
-        if (map.get(serverName)!.spieler2!.feld1[x][y] === FeldState.ship) {
-            map.get(serverName)!.spieler1.feld2[x][y] = FeldState.ship;
-            map.get(serverName)!.spieler2!.feld1[x][y] = FeldState.koShip;
+        if (map.get(serverName)!.spieler2!.feld1[x][y].state === FeldState.ship) {
+            map.get(serverName)!.spieler1.feld2[x][y].state = FeldState.ship;
+            map.get(serverName)!.spieler2!.feld1[x][y].state = FeldState.koShip;
+            map.get(serverName)!.spieler2!.feld1[x][y].hit = true;
         } else {
-            map.get(serverName)!.spieler1.feld2[x][y] = FeldState.water;
-            map.get(serverName)!.spieler2!.feld1[x][y] = FeldState.water;
+            map.get(serverName)!.spieler1.feld2[x][y].state = FeldState.water;
+            map.get(serverName)!.spieler2!.feld1[x][y].state = FeldState.water;
         }
-        if (hasPlayerWon(playerName, serverName)) {
+
+        map.get(serverName)!.spieler2!.feld1[oldX][oldY].lastHit = false;
+        map.get(serverName)!.spieler2!.feld1[x][y].lastHit = true;
+
+        if (checkField(map.get(serverName)!.spieler2!.feld1)) {
             map.get(serverName)!.gameEnd = true;
         }
         map.get(serverName)!.isSpieler1AmZug = false;
@@ -149,14 +194,19 @@ app.post("/postGuessFieldCords", (req, res) => {
             res.json({isPlayerAmZug: false})
             return
         }
-        if (map.get(serverName)!.spieler1!.feld1[x][y] === FeldState.ship) {
-            map.get(serverName)!.spieler2!.feld2[x][y] = FeldState.ship;
-            map.get(serverName)!.spieler1!.feld1[x][y] = FeldState.koShip;
+        if (map.get(serverName)!.spieler1!.feld1[x][y].state === FeldState.ship) {
+            map.get(serverName)!.spieler2!.feld2[x][y].state = FeldState.ship;
+            map.get(serverName)!.spieler1!.feld1[x][y].state = FeldState.koShip;
+            map.get(serverName)!.spieler1!.feld1[x][y].hit = true;
         } else {
-            map.get(serverName)!.spieler2!.feld2[x][y] = FeldState.water;
-            map.get(serverName)!.spieler1!.feld1[x][y] = FeldState.water;
+            map.get(serverName)!.spieler2!.feld2[x][y].state = FeldState.water;
+            map.get(serverName)!.spieler1!.feld1[x][y].state = FeldState.water;
         }
-        if (hasPlayerWon(playerName, serverName)) {
+
+        map.get(serverName)!.spieler1.feld1[oldX][oldY].lastHit = false;
+        map.get(serverName)!.spieler1.feld1[x][y].lastHit = true;
+
+        if (checkField(map.get(serverName)!.spieler1.feld1)) {
             map.get(serverName)!.gameEnd = true;
         }
         map.get(serverName)!.isSpieler1AmZug = true;
@@ -164,28 +214,6 @@ app.post("/postGuessFieldCords", (req, res) => {
 
     res.json({isPlayerAmZug: true});
 })
-
-app.get("/isGameFinished", (req, res) => {
-    let serverName = req.query.serverName!.toString();
-
-    if (map.get(serverName)!.gameEnd) res.json({finished: true})
-    else res.json({finished: false})
-})
-
-function hasPlayerWon(playerName: string, serverName: string): boolean {
-    for (let feld1Element of map.get(serverName)!.spieler1.feld1) {
-        for (let feldState of feld1Element) {
-            if (feldState === FeldState.ship) return false;
-        }
-    }
-    for (let feld1Element of map.get(serverName)!.spieler1.feld1) {
-        for (let feldState of feld1Element) {
-            if (feldState === FeldState.ship) return false;
-        }
-    }
-    return true;
-}
-
 app.get("/getGuessField", (req, res) => {
     let data;
     let elem = req.query.playerName;
@@ -202,8 +230,10 @@ app.get("/getGuessField", (req, res) => {
     res.json(data);
 })
 
+
+//ownPlayField
 app.post("/postField", (req, res) => {
-    let playField: FeldState[][] = req.body.field;
+    let playField: Feld = req.body.field;
 
     let playerName: string = req.body.name;
     let serverName: string = req.body.server;
@@ -222,13 +252,20 @@ app.post("/postField", (req, res) => {
 
     res.end();
 })
-
 app.get("/getField", (req, res) => {
+    // let serverName: string = req.query.serverName!.toString();
+    // let playerName: string = req.query.playerName!.toString();
+
     let data;
     let elem = req.query.playerName;
 
     let playerName = elem!.toString().split(",")[0]
     let serverName = elem!.toString().split(",")[1]
+
+    if(!map.has(serverName)) {
+        res.json({field: undefined})
+        return
+    }
 
     if (playerName === map.get(serverName)!.spieler1.name) {
         data = {field: map.get(serverName)!.spieler1.feld1}

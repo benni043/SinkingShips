@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FeldState} from "../../../../Server";
+import {Feld, FeldState} from "../../../../Server";
 
 @Component({
   selector: 'app-display-grid',
@@ -10,14 +10,18 @@ export class DisplayGridComponent{
 
   playFieldTopNav: string[] = [" ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
-  @Input() playField: FeldState[][] = []
+  @Input() playField: Feld = []
 
   @Output() cords: EventEmitter<{x: number, y: number}> = new EventEmitter<{x: number, y: number}>();
 
   @Input() playerName: string = "";
   @Output() sendName: EventEmitter<string> = new EventEmitter<string>();
 
+  @Input() hover: boolean = true;
+  @Input() disabled: boolean = false;
+
   sendCord(x: number, y: number) {
+    if(this.disabled) return;
     this.cords.emit({x: x, y: y});
   }
 

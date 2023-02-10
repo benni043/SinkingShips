@@ -16,11 +16,11 @@ export type Spieler = {
     feld2: Feld;
 }
 
-export type Feld = FeldState[][];
+export type Feld = {state: FeldState, hit: boolean, lastHit: boolean }[][];
 
 export enum FeldState {
     ship = "X",
-    koShip = "|",
+    koShip = "#",
     water = "O",
     empty = " "
 }
@@ -37,12 +37,12 @@ export enum Status {
 }
 
 export function createEmptyField(): Feld {
-    let field: FeldState[][] = [];
+    let field: Feld = [];
 
     for (let i = 0; i < 10; i++) {
         field[i] = [];
         for (let j = 0; j < 10; j++) {
-            field[i][j] = FeldState.empty;
+            field[i][j] = {state: FeldState.empty, hit: false, lastHit: false};
         }
     }
 

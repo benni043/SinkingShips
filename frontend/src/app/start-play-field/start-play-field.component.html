@@ -1,5 +1,8 @@
 <div>
-  <h2>{{playerName}}</h2>
-  <app-display-grid (cords)="setField($event)" [playField]="playField"></app-display-grid>
-  <button *ngIf="!clicked" (click)="send()">send</button>
+  <h2>Name: <span>{{playerName}}</span></h2>
+  <app-display-grid [disabled]="gameEnd" [hover]="!clicked" (cords)="setField($event)" [playField]="playField"></app-display-grid>
+
+  <div id="bc">
+    <button *ngIf="!clicked" (click)="send()">send</button>
+  </div>
 </div>

@@ -1,12 +1,20 @@
 <div id="mainTable">
-  <app-login *ngIf="!loggedIn" (login)="send($event)"></app-login>
+  <div *ngIf="!loggedIn">
+    <app-login (login)="send($event)"></app-login>
+  </div>
 
   <div *ngIf="loggedIn">
-    <app-start-play-field [serverName]="serverName" [playerName]="playerName"></app-start-play-field>
-    <app-guess-play-field [serverName]="serverName" [playerName]="playerName"></app-guess-play-field>
-  </div>
-</div>
+    <button *ngIf="gameEnd" (click)="leaveLobby()">leave room</button>
+    <h3 id="margin">Server:</h3>
+    <h4 id="margin2"><span>{{serverName}}</span></h4>
+    <h3 *ngIf="!gameEnd"><span>{{actPlayer}}</span> ist am Zug!</h3>
+    <h3 *ngIf="gameEnd"><span>{{actPlayer}}</span> hat gewonnen!</h3>
 
-<div *ngIf="gameEnd">
-  <button (click)="leaveLobby()">leave room</button>
+    <div id="fields">
+      <app-start-play-field [gameEnd]="gameEnd" [serverName]="serverName" [playerName]="playerName"></app-start-play-field>
+      <app-guess-play-field [gameEnd]="gameEnd" [serverName]="serverName" [playerName]="playerName"></app-guess-play-field>
+    </div>
+
+  </div>
+
 </div>

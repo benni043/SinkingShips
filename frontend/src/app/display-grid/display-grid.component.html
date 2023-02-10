@@ -1,10 +1,10 @@
 <table>
   <tr>
-    <th *ngFor="let playFieldTopNavItem of playFieldTopNav">{{playFieldTopNavItem}}</th>
+    <th [class.disabled]="disabled" *ngFor="let playFieldTopNavItem of playFieldTopNav">{{playFieldTopNavItem}}</th>
   </tr>
 
   <tr *ngFor="let row of playField; index as i">
-    <th>{{i + 1}}</th>
-    <td (click)="sendCord(i, i1)" *ngFor="let cell of row; index as i1">{{cell}}</td>
+    <th [class.disabled]="disabled">{{i + 1}}</th>
+    <td [class.disabled]="disabled" [class.hover]="hover" [class.hit]="playField[i][i1].hit" [class.last]="playField[i][i1].lastHit" (click)="sendCord(i, i1)" *ngFor="let cell of row; index as i1">{{cell.state}}</td>
   </tr>
 </table>
