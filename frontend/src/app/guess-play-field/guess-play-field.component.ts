@@ -10,7 +10,7 @@ export class GuessPlayFieldComponent implements OnInit{
   async ngOnInit(): Promise<void> {
     let interval = setInterval(async () => {
       if (this.gegnerName === "" || this.gegnerName === undefined) {
-        let response = await fetch("http://10.0.0.48:3000/opponent?serverName=" + this.serverName + "&playerName=" + this.playerName);
+        let response = await fetch("/opponent?serverName=" + this.serverName + "&playerName=" + this.playerName);
         let json = await response.json();
 
         this.gegnerName = json.opponent;
@@ -20,7 +20,7 @@ export class GuessPlayFieldComponent implements OnInit{
     })
 
     let interval2 = setInterval(async () => {
-      let response2 = await fetch("http://10.0.0.48:3000/isStarted?serverName=" + this.serverName);
+      let response2 = await fetch("/isStarted?serverName=" + this.serverName);
       let json2 = await response2.json();
 
       if (json2.started) {
@@ -50,7 +50,7 @@ export class GuessPlayFieldComponent implements OnInit{
   async send(x: number, y: number) {
     let cords = {x: x, y: y, oldY: this.oldY, oldX: this.oldX, playerName: this.playerName, serverName: this.serverName};
 
-    let response = await fetch("http://10.0.0.48:3000/postGuessFieldCords", {
+    let response = await fetch("/postGuessFieldCords", {
       headers: {
         "Content-Type": "application/json"
       },
@@ -71,7 +71,7 @@ export class GuessPlayFieldComponent implements OnInit{
   }
 
   async setPlayField() {
-    let response = await fetch("http://10.0.0.48:3000/getGuessField?playerName=" + this.playerName + "," + this.serverName);
+    let response = await fetch("/getGuessField?playerName=" + this.playerName + "," + this.serverName);
     let json = await response.json();
 
     this.playField = json.field;

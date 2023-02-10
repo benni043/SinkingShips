@@ -21,7 +21,7 @@ export class AppComponent {
   async leaveLobby() {
     this.loggedIn = false;
 
-    fetch("http://10.0.0.48:3000/playerLeft", {
+    fetch("/playerLeft", {
       headers: {
         "Content-Type": "application/json"
       },
@@ -63,7 +63,7 @@ export class AppComponent {
         break
       }
       case Status.join: {
-        await fetch("http://10.0.0.48:3000/addGame", {
+        await fetch("/addGame", {
           headers: {
             "Content-Type": "application/json"
           },
@@ -81,7 +81,7 @@ export class AppComponent {
     }
 
     let interval = setInterval(async () => {
-      let response = await fetch("http://10.0.0.48:3000/isGameFinished?serverName=" + this.serverName);
+      let response = await fetch("/isGameFinished?serverName=" + this.serverName);
       let json = await response.json();
 
       let server = json.server;
@@ -107,7 +107,7 @@ export class AppComponent {
   }
 
   async check(): Promise<Status> {
-    let response = await fetch("http://10.0.0.48:3000/check", {
+    let response = await fetch("/check", {
       headers: {
         "Content-Type": "application/json"
       },

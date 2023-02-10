@@ -12,7 +12,7 @@ export class StartPlayFieldComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    let response = await fetch("http://10.0.0.48:3000/getPlayer?playerName=" + this.playerName + "&serverName=" + this.serverName);
+    let response = await fetch("/getPlayer?playerName=" + this.playerName + "&serverName=" + this.serverName);
     let json = await response.json();
 
     if (json.player.fieldSent) this.clicked = true;
@@ -49,7 +49,7 @@ export class StartPlayFieldComponent implements OnInit, OnDestroy {
 
     let playField = {field: this.playField, name: this.playerName, server: this.serverName};
 
-    await fetch("http://10.0.0.48:3000/postField", {
+    await fetch("/postField", {
       headers: {
         "Content-Type": "application/json"
       },
@@ -63,7 +63,7 @@ export class StartPlayFieldComponent implements OnInit, OnDestroy {
   }
 
   async setPlayField() {
-    let response = await fetch("http://10.0.0.48:3000/getField?playerName=" + this.playerName + "," + this.serverName);
+    let response = await fetch("/getField?playerName=" + this.playerName + "," + this.serverName);
     let json = await response.json();
 
     if (json.field !== undefined) this.playField = json.field;
