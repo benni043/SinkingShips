@@ -162,9 +162,6 @@ app.post("/postGuessFieldCords", (req, res) => {
     let x: number = req.body.x;
     let y: number = req.body.y;
 
-    let oldX: number = req.body.oldX;
-    let oldY: number = req.body.oldY;
-
     let playerName: string = req.body.playerName;
     let serverName: string = req.body.serverName;
 
@@ -182,7 +179,7 @@ app.post("/postGuessFieldCords", (req, res) => {
             map.get(serverName)!.spieler2!.feld1[x][y].state = FeldState.water;
         }
 
-        map.get(serverName)!.spieler2!.feld1[oldX][oldY].lastHit = false;
+        clearLastHit(map.get(serverName)!.spieler2!.feld1)
         map.get(serverName)!.spieler2!.feld1[x][y].lastHit = true;
 
         if (checkField(map.get(serverName)!.spieler2!.feld1)) {
@@ -203,7 +200,7 @@ app.post("/postGuessFieldCords", (req, res) => {
             map.get(serverName)!.spieler1!.feld1[x][y].state = FeldState.water;
         }
 
-        map.get(serverName)!.spieler1.feld1[oldX][oldY].lastHit = false;
+        clearLastHit(map.get(serverName)!.spieler1.feld1)
         map.get(serverName)!.spieler1.feld1[x][y].lastHit = true;
 
         if (checkField(map.get(serverName)!.spieler1.feld1)) {
@@ -214,6 +211,15 @@ app.post("/postGuessFieldCords", (req, res) => {
 
     res.json({isPlayerAmZug: true});
 })
+
+function clearLastHit(playField: Feld) {
+    for (let playFieldElement of playField) {
+        for (let playFieldElementElement of playFieldElement) {
+            playFieldElementElement.lastHit = false;
+        }
+    }
+}
+
 app.get("/getGuessField", (req, res) => {
     let data;
     let elem = req.query.playerName;

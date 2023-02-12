@@ -1,5 +1,6 @@
 import {Component, HostListener} from '@angular/core';
 import {Status} from "../../../Server";
+import {environment} from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -18,10 +19,10 @@ export class AppComponent {
     playerName: ''
   };
 
-  async leaveLobby() {
+  leaveLobby() {
     this.loggedIn = false;
 
-    fetch("/playerLeft", {
+    fetch(`${environment.backendUrl}/playerLeft`, {
       headers: {
         "Content-Type": "application/json"
       },
@@ -33,18 +34,8 @@ export class AppComponent {
   }
 
   // @HostListener('window:beforeunload', ['$event'])
-  // unloadHandler(event: Event) {
-  //   this.loggedIn = false;
-  //
-  //   fetch("http://10.0.0.48:3000/playerLeft", {
-  //     headers: {
-  //       "Content-Type": "application/json"
-  //     },
-  //     method: "POST",
-  //     body: JSON.stringify(this.login)
-  //   }).then().catch()
-  //
-  //   this.gameEnd = false;
+  // handleBeforeUnload(event: Event) {
+  //   this.leaveLobby();
   // }
 
   actPlayer = "";
@@ -63,7 +54,7 @@ export class AppComponent {
         break
       }
       case Status.join: {
-        await fetch("/addGame", {
+        await fetch(`${environment.backendUrl}/addGame`, {
           headers: {
             "Content-Type": "application/json"
           },
@@ -81,7 +72,7 @@ export class AppComponent {
     }
 
     let interval = setInterval(async () => {
-      let response = await fetch("/isGameFinished?serverName=" + this.serverName);
+      let response = await fetch(`${environment.backendUrl}/isGameFinished?serverName=` + this.serverName);
       let json = await response.json();
 
       let server = json.server;
@@ -107,7 +98,7 @@ export class AppComponent {
   }
 
   async check(): Promise<Status> {
-    let response = await fetch("/check", {
+    let response = await fetch(`${environment.backendUrl}/check`, {
       headers: {
         "Content-Type": "application/json"
       },

@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Feld, FeldState} from "../../../../Server";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-guess-play-field',
@@ -10,7 +11,7 @@ export class GuessPlayFieldComponent implements OnInit{
   async ngOnInit(): Promise<void> {
     let interval = setInterval(async () => {
       if (this.gegnerName === "" || this.gegnerName === undefined) {
-        let response = await fetch("/opponent?serverName=" + this.serverName + "&playerName=" + this.playerName);
+        let response = await fetch(`${environment.backendUrl}/opponent?serverName=` + this.serverName + "&playerName=" + this.playerName);
         let json = await response.json();
 
         this.gegnerName = json.opponent;
@@ -20,7 +21,7 @@ export class GuessPlayFieldComponent implements OnInit{
     })
 
     let interval2 = setInterval(async () => {
-      let response2 = await fetch("/isStarted?serverName=" + this.serverName);
+      let response2 = await fetch(`${environment.backendUrl}/isStarted?serverName=` + this.serverName);
       let json2 = await response2.json();
 
       if (json2.started) {
@@ -44,13 +45,11 @@ export class GuessPlayFieldComponent implements OnInit{
   }
 
   started: boolean = false;
-  oldX: number = 0;
-  oldY: number = 0;
 
   async send(x: number, y: number) {
-    let cords = {x: x, y: y, oldY: this.oldY, oldX: this.oldX, playerName: this.playerName, serverName: this.serverName};
+    let cords = {x: x, y: y, playerName: this.playerName, serverName: this.serverName};
 
-    let response = await fetch("/postGuessFieldCords", {
+    let response = await fetch(`${environment.backendUrl}/postGuessFieldCords`, {
       headers: {
         "Content-Type": "application/json"
       },
@@ -65,13 +64,10 @@ export class GuessPlayFieldComponent implements OnInit{
     } else {
       alert(this.gegnerName + " ist am Zug!")
     }
-
-    this.oldX = x;
-    this.oldY = y;
   }
 
   async setPlayField() {
-    let response = await fetch("/getGuessField?playerName=" + this.playerName + "," + this.serverName);
+    let response = await fetch(`${environment.backendUrl}/getGuessField?playerName=` + this.playerName + "," + this.serverName);
     let json = await response.json();
 
     this.playField = json.field;

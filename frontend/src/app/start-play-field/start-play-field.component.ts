@@ -1,5 +1,6 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Feld, FeldState} from "../../../../Server";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-start-play-field',
@@ -12,7 +13,7 @@ export class StartPlayFieldComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    let response = await fetch("/getPlayer?playerName=" + this.playerName + "&serverName=" + this.serverName);
+    let response = await fetch(`${environment.backendUrl}/getPlayer?playerName=` + this.playerName + "&serverName=" + this.serverName);
     let json = await response.json();
 
     if (json.player.fieldSent) this.clicked = true;
@@ -49,7 +50,7 @@ export class StartPlayFieldComponent implements OnInit, OnDestroy {
 
     let playField = {field: this.playField, name: this.playerName, server: this.serverName};
 
-    await fetch("/postField", {
+    await fetch(`${environment.backendUrl}/postField`, {
       headers: {
         "Content-Type": "application/json"
       },
@@ -63,7 +64,7 @@ export class StartPlayFieldComponent implements OnInit, OnDestroy {
   }
 
   async setPlayField() {
-    let response = await fetch("/getField?playerName=" + this.playerName + "," + this.serverName);
+    let response = await fetch(`${environment.backendUrl}/getField?playerName=` + this.playerName + "," + this.serverName);
     let json = await response.json();
 
     if (json.field !== undefined) this.playField = json.field;
